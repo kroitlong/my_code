@@ -1,0 +1,16 @@
+| Tables |
+| t1 |
+| Tables |
+| t1 |
+| t2 |
+| name | id | score |
+| name | id | score |
+| data Structure | 1 | 90.500000 |
+| data Structure | 2 | 95.500000 |
+| Calculus | 1 | 88.500000 |
+| Calculus | 2 | 92.500000 |
+failure
+| score | name | id |
+| 90.500000 | data Structure | 1 |
+| 95.500000 | data Structure | 2 |
+| 92.500000 | Calculus | 2 |

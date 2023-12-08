@@ -1,0 +1,4 @@
+/mnt/e/Linux_for_vscode/DBMS设计/db2023/rmdb/src/parser/build/CMakeFiles/parser.dir
+/mnt/e/Linux_for_vscode/DBMS设计/db2023/rmdb/src/parser/build/CMakeFiles/test_parser.dir
+/mnt/e/Linux_for_vscode/DBMS设计/db2023/rmdb/src/parser/build/CMakeFiles/edit_cache.dir
+/mnt/e/Linux_for_vscode/DBMS设计/db2023/rmdb/src/parser/build/CMakeFiles/rebuild_cache.dir
