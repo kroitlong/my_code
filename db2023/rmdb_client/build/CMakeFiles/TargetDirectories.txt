@@ -1,3 +1,0 @@
-/mnt/e/Linux_c++/c++/项目/db2023-1/rmdb_client/build/CMakeFiles/rmdb_client.dir
-/mnt/e/Linux_c++/c++/项目/db2023-1/rmdb_client/build/CMakeFiles/edit_cache.dir
-/mnt/e/Linux_c++/c++/项目/db2023-1/rmdb_client/build/CMakeFiles/rebuild_cache.dir
