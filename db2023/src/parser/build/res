@@ -648,5 +648,87 @@ show index from warehouse;
 SHOW INDEX
   warehouse
 
+select SUM(id) as sum_id from aggregate;
+SELECT
+  LIST
+    COL
+      
+      id
+      4
+      sum_id
+  LIST
+    aggregate
+  LIST
+
+select SUM(val) as sum_val from aggregate;
+SELECT
+  LIST
+    COL
+      
+      val
+      4
+      sum_val
+  LIST
+    aggregate
+  LIST
+
+select SUM(val) as sum_val,id from aggregate;
+SELECT
+  LIST
+    COL
+      
+      val
+      4
+      sum_val
+    COL
+      
+      id
+  LIST
+    aggregate
+  LIST
+
+select COUNT(*) as count_row from aggregate;
+SELECT
+  LIST
+    COL
+      
+      *
+      1
+      count_row
+  LIST
+    aggregate
+  LIST
+
+select COUNT(id) as count_id from aggregate;
+SELECT
+  LIST
+    COL
+      
+      id
+      1
+      count_id
+  LIST
+    aggregate
+  LIST
+
+select COUNT(name) as count_name from aggregate where val = 2.0;
+SELECT
+  LIST
+    COL
+      
+      name
+      1
+      count_name
+  LIST
+    aggregate
+  LIST
+    BINARY_EXPR
+      COL
+        
+        val
+      ==
+      FLOAT_LIT
+        2
+
 
 exit/EOF

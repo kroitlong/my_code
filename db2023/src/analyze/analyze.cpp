@@ -29,16 +29,25 @@ std::shared_ptr<Query> Analyze::do_analyze(std::shared_ptr<ast::TreeNode> parse)
         }
         // 处理target list，在target list中添加上表名，例如 a.id
         for (auto &sv_sel_col : x->cols) {
-            TabCol sel_col = {.tab_name = sv_sel_col->tab_name, .col_name = sv_sel_col->col_name};
-            query->cols.push_back(sel_col);
+            TabCol sel_col = {.tab_name = sv_sel_col->tab_name,
+                              .col_name = sv_sel_col->col_name,
+                              .as_name = sv_sel_col->as_name,
+                              .aggregator = sv_sel_col->aggregator
+                             };
+            query->cols.push_back(std::move(sel_col));
+
         }
 
         std::vector<ColMeta> all_cols;
         get_all_cols(query->tables, all_cols);
-        if (query->cols.empty()) {
+        if (query->cols.size() == 0) {
             // select all columns
             for (auto &col : all_cols) {
-                TabCol sel_col = {.tab_name = col.tab_name, .col_name = col.name};
+                TabCol sel_col = {.tab_name = col.tab_name,
+                                  .col_name = col.name,
+                                  .as_name = "",
+                                  .aggregator = ast::EMPTY,
+                                 };
                 query->cols.push_back(sel_col);
             }
         } else {
@@ -47,6 +56,7 @@ std::shared_ptr<Query> Analyze::do_analyze(std::shared_ptr<ast::TreeNode> parse)
                 sel_col = check_column(all_cols, sel_col);  // 列元数据校验
             }
         }
+
         //处理where条件
         get_clause(x->conds, query->conds);
         check_clause(query->tables, query->conds);
@@ -64,7 +74,11 @@ std::shared_ptr<Query> Analyze::do_analyze(std::shared_ptr<ast::TreeNode> parse)
         for (auto &clause : x->set_clauses) {
             SetClause st_cls;
             // 1. 获取st_cls.sel_col
-            TabCol sel_col = {.tab_name = table_name, .col_name = clause->col_name};
+            TabCol sel_col = {.tab_name = table_name,
+                              .col_name = clause->col_name,
+                              .as_name = "",
+                              .aggregator = ast::EMPTY,
+                             };
             st_cls.lhs = sel_col;
             // 2. 获取st_cls.value
             ColMeta col = *(table_meta.get_col(sel_col.col_name));
@@ -125,6 +139,9 @@ TabCol Analyze::check_column(const std::vector<ColMeta> &all_cols, TabCol target
                 tab_name = col.tab_name;
             }
         }
+        if (target.col_name == "*") {
+            tab_name = "ALL_TABLE";
+        }
         if (tab_name.empty()) {
             throw ColumnNotFoundError(target.col_name);
         }
@@ -134,7 +151,10 @@ TabCol Analyze::check_column(const std::vector<ColMeta> &all_cols, TabCol target
         //------------------------------------------------------
         bool col_found = false;
         for (auto &col : all_cols) {
-            if ( col.tab_name == target.tab_name && col.name == target.col_name) {
+            if ((col.tab_name == target.tab_name && col.name == target.col_name) ||
+                    col.tab_name == target.tab_name && target.col_name == "*" ||
+                    target.tab_name == "" && target.col_name == ".*"
+               ) {
                 col_found = true;
             }
         }

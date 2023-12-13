@@ -18,6 +18,7 @@ See the Mulan PSL v2 for more details. */
 
 #include "errors.h"
 #include "sm_defs.h"
+#include "parser/ast.h"
 
 /* 字段元数据 */
 struct ColMeta {
@@ -27,6 +28,7 @@ struct ColMeta {
     int len;                // 字段长度
     int offset;             // 字段位于记录中的偏移量
     bool index;             // 该字段是否为索引
+    ast::SvAggre a_type;    // 该字段在查询若被用于聚合函数，则聚合函数的类型
 
     friend std::ostream &operator<<(std::ostream &os, const ColMeta &col) {
         // ColMeta中有各个基本类型的变量，然后调用重载的这些变量的操作符<<（具体实现逻辑在defs.h）
@@ -137,7 +139,7 @@ struct TabMeta {
         auto pos = std::find_if(cols.begin(), cols.end(), [&](const ColMeta & col) {
             return col.name == col_name;
         });
-        if (pos == cols.end()) {
+        if (pos == cols.end() && col_name != "*") {
             throw ColumnNotFoundError(col_name);
         }
         return pos;
@@ -193,6 +195,7 @@ public:
     void SetTabMeta(const std::string &tab_name, const TabMeta &meta) {
         tabs_[tab_name] = meta;
     }
+
 
     /* 获取指定名称表的元数据 */
     TabMeta &get_table(const std::string &tab_name) {

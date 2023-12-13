@@ -46,7 +46,6 @@ class UpdateExecutor : public AbstractExecutor {
                 auto& index = tab_.indexes[i];
                 auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, index.cols)).get();
                 char key[index.col_tot_len];
-                memset(key, 0, index.col_tot_len);
                 int offset = 0;
                 for(size_t i = 0; i < index.col_num; ++i) {
                     memcpy(key + offset, rec->data + index.cols[i].offset, index.cols[i].len);
@@ -57,7 +56,6 @@ class UpdateExecutor : public AbstractExecutor {
 
             // 更新record file
             char new_rec[fh_->get_file_hdr().record_size];
-            memset(new_rec, 0, fh_->get_file_hdr().record_size);
             memcpy(new_rec, rec->data, fh_->get_file_hdr().record_size);
             for(auto &set_clause: set_clauses_) {
                 auto lhs_col = tab_.get_col(set_clause.lhs.col_name);
@@ -73,7 +71,6 @@ class UpdateExecutor : public AbstractExecutor {
                     auto& index = tab_.indexes[i];
                     auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, index.cols)).get();
                     char key[index.col_tot_len];
-                    memset(key, 0, index.col_tot_len);
                     int offset = 0;
                     for(size_t i = 0; i < index.col_num; ++i) {
                         memcpy(key + offset, new_rec + index.cols[i].offset, index.cols[i].len);
@@ -90,7 +87,6 @@ class UpdateExecutor : public AbstractExecutor {
                     auto& index = tab_.indexes[i];
                     auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, index.cols)).get();
                     char key[index.col_tot_len];
-                    memset(key, 0, index.col_tot_len);
                     int offset = 0;
                     for(size_t i = 0; i < index.col_num; ++i) {
                         memcpy(key + offset, rec->data + index.cols[i].offset, index.cols[i].len);

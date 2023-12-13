@@ -23,7 +23,7 @@ using namespace ast;
 // keywords
 %token SHOW TABLES CREATE TABLE DROP DESC INSERT INTO VALUES DELETE FROM ASC ORDER BY
 WHERE UPDATE SET SELECT INT CHAR FLOAT INDEX AND JOIN EXIT HELP TXN_BEGIN TXN_COMMIT TXN_ABORT
-TXN_ROLLBACK ORDER_BY DATETIME BIGINT
+TXN_ROLLBACK ORDER_BY DATETIME BIGINT COUNT MIN MAX SUM AS LIMIT
 // non-keywords
 %token LEQ NEQ GEQ T_EOF
 
@@ -51,8 +51,11 @@ TXN_ROLLBACK ORDER_BY DATETIME BIGINT
 %type <sv_set_clauses> setClauses
 %type <sv_cond> condition
 %type <sv_conds> whereClause optWhereClause
-%type <sv_orderby>  order_clause opt_order_clause
+%type <sv_orderby>  order_clause
+%type <sv_orderbys> order_clauses
+%type <op_sv_orderbys> opt_order_clauses 
 %type <sv_orderby_dir> opt_asc_desc
+%type <sv_aggre> Aggregator 
 
 %%
 start:
@@ -151,7 +154,7 @@ dml:
     {
         $$ = std::make_shared<UpdateStmt>($2, $4, $5);
     }
-    |   SELECT selector FROM tableList optWhereClause opt_order_clause
+    |   SELECT selector FROM tableList optWhereClause opt_order_clauses
     {
         $$ = std::make_shared<SelectStmt>($2, $4, $5, $6);
     }
@@ -272,11 +275,27 @@ whereClause:
 col:
         tbName '.' colName
     {
-        $$ = std::make_shared<Col>($1, $3);
+        $$ = std::make_shared<Col>($1, $3, "" ,EMPTY );
     }
     |   colName
     {
-        $$ = std::make_shared<Col>("", $1);
+        $$ = std::make_shared<Col>("", $1, "" ,EMPTY );
+    }
+    |   Aggregator '(' colName ')' AS colName
+    {
+        $$ = std::make_shared<Col>("", $3, $6, $1);
+    }
+    |   Aggregator '(' colName ')'
+    {
+        $$=std::make_shared<Col>("", $3, "", $1 );
+    }
+    |   Aggregator '(' '*' ')' AS colName
+    {
+        $$ = std::make_shared<Col>("", "*", $6, $1);
+    }
+    |   Aggregator '(' '*' ')'
+    {
+        $$=std::make_shared<Col>("", "*", "", $1);
     }
     ;
 
@@ -288,6 +307,25 @@ colList:
     |   colList ',' col
     {
         $$.push_back($3);
+    }
+    ;
+
+Aggregator:
+        COUNT
+    {
+        $$ = SV_COUNT;
+    }
+    |   MAX
+    {
+        $$ = SV_MAX;
+    }
+    |   MIN
+    {
+        $$ = SV_MIN;
+    }
+    |   SUM
+    {
+        $$ = SV_SUM;
     }
     ;
 
@@ -370,12 +408,29 @@ tableList:
     }
     ;
 
-opt_order_clause:
-    ORDER BY order_clause      
-    { 
-        $$ = $3; 
+opt_order_clauses:
+    ORDER BY order_clauses
+    {
+        $$ = std::pair<std::vector<std::shared_ptr<OrderBy>>, int>{$3, -1};
     }
-    |   /* epsilon */ { /* ignore*/ }
+    |
+    ORDER BY order_clauses LIMIT VALUE_INT
+    {
+        $$ = std::pair<std::vector<std::shared_ptr<OrderBy>>, int>{$3, $5};
+    }
+    | /* epsilon */ { /* ignore*/ }
+    ;
+
+order_clauses:
+    order_clause      
+    { 
+        $$ = std::vector<std::shared_ptr<OrderBy>>{$1}; 
+    }
+    |
+    order_clauses ',' order_clause
+    {
+        $$.push_back($3);
+    }
     ;
 
 order_clause:
@@ -393,5 +448,5 @@ opt_asc_desc:
 
 tbName: IDENTIFIER;
 
-colName: IDENTIFIER;
+colName: IDENTIFIER
 %%

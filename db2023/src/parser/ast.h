@@ -27,6 +27,10 @@ enum SvCompOp {
     SV_OP_EQ, SV_OP_NE, SV_OP_LT, SV_OP_GT, SV_OP_LE, SV_OP_GE
 };
 
+enum SvAggre {
+    EMPTY, SV_COUNT, SV_MAX, SV_MIN, SV_SUM
+};
+
 enum OrderByDir {
     OrderBy_DEFAULT,
     OrderBy_ASC,
@@ -164,9 +168,11 @@ struct StringLit : public Value {
 struct Col : public Expr {
     std::string tab_name;
     std::string col_name;
+    std::string as_name;
+    SvAggre aggregator;
 
-    Col(std::string tab_name_, std::string col_name_) :
-        tab_name(std::move(tab_name_)), col_name(std::move(col_name_)) {}
+    Col(std::string tab_name_, std::string col_name_, std::string as_name_, SvAggre aggregator_) :
+        tab_name(std::move(tab_name_)), col_name(std::move(col_name_)),  as_name(std::move(as_name_)), aggregator(std::move(aggregator_)) {}
 };
 
 struct SetClause : public TreeNode {
@@ -237,18 +243,19 @@ struct SelectStmt : public TreeNode {
     std::vector<std::shared_ptr<BinaryExpr>> conds;
     std::vector<std::shared_ptr<JoinExpr>> jointree;
 
-
+    //修改了select算法
     bool has_sort;
-    std::shared_ptr<OrderBy> order;
-
+    std::vector<std::shared_ptr<OrderBy>> orders;
+    // bool has_limit;
+    int limit;
 
     SelectStmt(std::vector<std::shared_ptr<Col>> cols_,
                std::vector<std::string> tabs_,
                std::vector<std::shared_ptr<BinaryExpr>> conds_,
-               std::shared_ptr<OrderBy> order_) :
+               std::pair<std::vector<std::shared_ptr<OrderBy>>, int> orders_) :
         cols(std::move(cols_)), tabs(std::move(tabs_)), conds(std::move(conds_)),
-        order(std::move(order_)) {
-        has_sort = (bool)order;
+        orders(std::move(orders_.first)), limit(orders_.second) {
+        has_sort = !orders.empty();
     }
 };
 
@@ -264,6 +271,7 @@ struct SemValue {
     std::shared_ptr<TreeNode> sv_node;
 
     SvCompOp sv_comp_op;
+    SvAggre sv_aggre;
 
     std::shared_ptr<TypeLen> sv_type_len;
 
@@ -285,6 +293,9 @@ struct SemValue {
     std::vector<std::shared_ptr<BinaryExpr>> sv_conds;
 
     std::shared_ptr<OrderBy> sv_orderby;
+    //新增orderby定义
+    std::vector<std::shared_ptr<OrderBy>> sv_orderbys;
+    std::pair<std::vector<std::shared_ptr<OrderBy>>, int> op_sv_orderbys;
 
 };
 

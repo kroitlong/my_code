@@ -114,6 +114,10 @@ private:
             std::cout << "COL\n";
             print_val(x->tab_name, offset);
             print_val(x->col_name, offset);
+            if (x->aggregator != EMPTY) {
+                print_val(x->aggregator, offset);
+                print_val(x->as_name, offset);
+            }
         } else if (auto x = std::dynamic_pointer_cast<TypeLen>(node)) {
             std::cout << "TYPE_LEN\n";
             print_val(type2str(x->type), offset);

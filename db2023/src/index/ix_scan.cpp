@@ -29,10 +29,5 @@ void IxScan::next() {
 }
 
 Rid IxScan::rid() const {
-    Rid rid = ih_->get_rid(iid_);
-    //printf("%d, %d\n", rid.page_no, rid.slot_no);
-    return rid;
+    return ih_->get_rid(iid_);
 }
-
-
-

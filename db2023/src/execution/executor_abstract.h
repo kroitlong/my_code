@@ -28,7 +28,7 @@ public:
         return 0;
     };
 
-    virtual const std::vector<ColMeta> &cols() const {
+    virtual std::vector<ColMeta> &cols() {
         std::vector<ColMeta> *_cols = nullptr;
         return *_cols;
     };
@@ -47,16 +47,24 @@ public:
 
     virtual Rid &rid() = 0;
 
+    virtual void reset_rid() {
+        _abstract_rid.page_no = RM_NO_PAGE;
+        _abstract_rid.slot_no = RM_NO_PAGE;
+    };
+
     virtual std::unique_ptr<RmRecord> Next() = 0;
 
     virtual ColMeta get_col_offset(const TabCol &target) {
         return ColMeta();
     };
 
-    std::vector<ColMeta>::const_iterator get_col(const std::vector<ColMeta> &rec_cols, const TabCol &target) {
+    std::vector<ColMeta>::const_iterator get_col(std::vector<ColMeta> &rec_cols, const TabCol &target) {
         auto pos = std::find_if(rec_cols.begin(), rec_cols.end(), [&](const ColMeta & col) {
             return col.tab_name == target.tab_name && col.name == target.col_name;
         });
+        if (target.tab_name == "ALL_TABLE") {
+            return rec_cols.begin();
+        }
         if (pos == rec_cols.end()) {
             throw ColumnNotFoundError(target.tab_name + '.' + target.col_name);
         }

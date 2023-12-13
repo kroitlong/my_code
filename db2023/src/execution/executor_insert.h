@@ -14,8 +14,6 @@ See the Mulan PSL v2 for more details. */
 #include "executor_abstract.h"
 #include "index/ix.h"
 #include "system/sm.h"
-#include <iostream>
-using namespace std;
 
 class InsertExecutor : public AbstractExecutor {
 private:
@@ -53,27 +51,27 @@ public:
             if (col.type != val.type) {
                 throw IncompatibleTypeError(coltype2str(col.type), coltype2str(val.type));
             }
-            val.init_raw(col.len); 
+            val.init_raw(col.len);
+
             memcpy(rec.data + col.offset, val.raw->data, col.len);
         }
+        // Insert into record file
         rid_ = fh_->insert_record(rec.data, context_);
-        //printf("Insert record <%s> into page_no: %d slot_no: %d\n", rec.data, rid_.page_no, rid_.slot_no);
+        fh_->insert_record(rid_, rec.data);
+        //std::cout << "插入的记录的rid<page_no, slot_no>: " << rid_.page_no << " " << rid_.slot_no << std::endl;
+
         // Insert into index
         for (size_t i = 0; i < tab_.indexes.size(); ++i) {
             auto &index = tab_.indexes[i];
             auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, index.cols)).get();
             char *key = new char[index.col_tot_len];
-            memset(key, 0, index.col_tot_len);
             int offset = 0;
-            for (size_t i = 0; i < index.col_num; ++i) { 
+            for (size_t i = 0; i < index.col_num; ++i) {
                 memcpy(key + offset, rec.data + index.cols[i].offset, index.cols[i].len);
                 offset += index.cols[i].len;
-            }    
-            
+            }
             ih->insert_entry(key, rid_, context_->txn_);
         }
-        
-        
         return nullptr;
     }
 

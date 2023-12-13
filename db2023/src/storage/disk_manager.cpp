@@ -169,8 +169,7 @@ void DiskManager::destroy_file(const std::string &path) {
     // 注意不能删除未关闭的文件
     // 检查文件是否已打开
     if (path2fd_.count(path) > 0) {
-        //std::cout << "File is open" << std::endl;
-        printf("File is open\n");
+        throw FileNotClosedError(path);
     }
     // 调用 unlink() 函数删除文件
     int result = unlink(path.c_str());

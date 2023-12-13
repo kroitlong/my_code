@@ -68,6 +68,12 @@ int main() {
         "drop index warehouse (id);",
         "drop index warehouse (id, name);",
         "show index from warehouse;",
+        "select SUM(id) as sum_id from aggregate;",
+        "select SUM(val) as sum_val from aggregate;",
+        "select SUM(val) as sum_val,id from aggregate;",
+        "select COUNT(*) as count_row from aggregate;",
+        "select COUNT(id) as count_id from aggregate;",
+        "select COUNT(name) as count_name from aggregate where val = 2.0;",
         "",
     };
     for (auto &sql : sqls) {

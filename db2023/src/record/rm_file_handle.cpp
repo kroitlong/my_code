@@ -9,6 +9,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details. */
 
 #include "rm_file_handle.h"
+#include <string>
 /**
  * @description: 获取当前表中记录号为rid的记录
  * @param {Rid&} rid 记录号，指定记录的位置
@@ -48,6 +49,7 @@ Rid RmFileHandle::insert_record(char *buf, Context *context) {
     memcpy(page_handle.get_slot(rid.slot_no), buf, file_hdr_.record_size);
     // 4. 更新page_handle.page_hdr中的数据结构
     Bitmap::set(page_handle.bitmap, rid.slot_no);
+    std::cout << std::endl;
     page_handle.page_hdr->num_records++;
     if (page_handle.page_hdr->num_records == file_hdr_.num_records_per_page)
         file_hdr_.first_free_page_no = page_handle.page_hdr->next_free_page_no;
@@ -65,7 +67,8 @@ void RmFileHandle::insert_record(const Rid &rid, char *buf) {
     // 2. 在指定位置插入记录
     RmPageHandle page_handle = fetch_page_handle(rid.page_no);
     if (Bitmap::is_set(page_handle.bitmap, rid.slot_no)) {
-        throw RecordNotFoundError(rid.page_no, rid.slot_no);
+        //不做处理。
+        //throw RecordNotFoundError(rid.page_no, rid.slot_no);
     }
     Bitmap::set(page_handle.bitmap, rid.slot_no);
     page_handle.page_hdr->num_records++;

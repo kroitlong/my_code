@@ -19,7 +19,6 @@ See the Mulan PSL v2 for more details. */
 #include "record/rm.h"
 #include "record_printer.h"
 
-using namespace std;
 /**
  * @description: 判断是否为一个文件夹
  * @return {bool} 返回是否为一个文件夹
@@ -230,7 +229,7 @@ void SmManager::create_table(const std::string &tab_name, const std::vector<ColD
                        .type = col_def.type,
                        .len = col_def.len,
                        .offset = curr_offset,
-                       .index = false
+                       .index = false,
                       };
         curr_offset += col_def.len;
         tab.cols.push_back(col);
@@ -319,34 +318,9 @@ void SmManager::create_index(const std::string &tab_name, const std::vector<std:
     index_meta.col_num = index_cols.size();
     index_meta.col_tot_len = index_len;
     index_meta.cols = index_cols;
-    
-    char *key = new char[index_meta.col_tot_len];
     std::string index_filename = ix_manager_->get_index_name(tab_name, index_meta.cols);
-    
     ihs_.emplace(index_filename, ix_manager_->open_index(tab_name, index_meta.cols));
     tab_meta.indexes.push_back(index_meta);
-    auto ih = ihs_[index_filename].get();
-    
-    RmFileHandle *fh;
-    fh = fhs_.at(tab_name).get();
-    std::unique_ptr<RecScan> scan = std::make_unique<RmScan>(fh);
-    //将表中每个记录对应的key存入索引
-  
-   for (; !scan->is_end(); scan->next()) {
-            auto rec = fh->get_record(scan->rid(), context);
-            memset(key, 0, index_meta.col_tot_len);
-            int offset = 0;
-            for (size_t i = 0; i < index_meta.col_num; ++i)
-            {
-              memcpy(key + offset, rec.get()->data + index_meta.cols[i].offset, index_meta.cols[i].len);
-              offset += index_meta.cols[i].len;
-            }
-            ih->insert_entry(key, scan->rid(), context->txn_);     
-    }
-    
-    
-    delete[] key;
-    
     // 6. 在Context中记录日志等
     // TODO
     flush_meta();

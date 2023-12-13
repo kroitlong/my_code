@@ -18,4 +18,3 @@ target_link_libraries(parser execution pthread)
 
 add_executable(rmdb rmdb.cpp)
 target_link_libraries(rmdb parser execution readline pthread planner analyze)
-

@@ -24,10 +24,19 @@ See the Mulan PSL v2 for more details. */
 struct TabCol {
     std::string tab_name;
     std::string col_name;
-
+    std::string as_name;
+    ast::SvAggre aggregator;
+    bool is_count_all;      //仅用来确定在count时是否是count(*)
+    
     friend bool operator<(const TabCol &x, const TabCol &y) {
         return std::make_pair(x.tab_name, x.col_name) < std::make_pair(y.tab_name, y.col_name);
     }
+};
+
+// 增加OrderByCol定义
+struct OrderByCol {
+    TabCol tabcol;
+    bool is_desc;
 };
 
 struct Value {
@@ -88,7 +97,6 @@ struct Value {
         }
         bigint_val.val = bigint;
     }
-
 
     void init_raw(int len) {
         assert(raw == nullptr);
@@ -300,7 +308,6 @@ struct Condition {
     TabCol rhs_col;   // right-hand side column
     Value rhs_val;    // right-hand side value
 };
-
 struct SetClause {
     TabCol lhs;
     Value rhs;
